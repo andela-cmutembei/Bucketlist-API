@@ -1,13 +1,11 @@
 #! /usr/bin/env python
 
+from blst.app import create_app
+from blst.models import db
+from flask.ext.script import Manager
 import os
 
-from flask.ext.script import Manager
-
-from app import create_app, db
-
-
-app = create_app(os.getenv('APP_CONFIG', 'default'))
+app = create_app(os.environ.get('BLST_CONFIG', 'default'))
 manager = Manager(app)
 
 
