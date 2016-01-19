@@ -10,6 +10,10 @@ class DBTestCase(unittest.TestCase):
         app.config.from_object(config['testing'])
         db.create_all()
 
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+
     def test_user_not_in_db_before_addition(self):
         """Queries the user table to ensure user is not in db already"""
 
@@ -26,3 +30,6 @@ class DBTestCase(unittest.TestCase):
         db.session.add(user_object)
         db.session.commit()
         self.assertEqual(user_object.username, 'test_first_user')
+
+if __name__ == '__main__':
+    unittest.main()

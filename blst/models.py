@@ -34,8 +34,8 @@ class Bucketlist(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.now())
     date_modified = db.Column(
         db.DateTime,
-        default=datetime.now(),
-        onupdate=datetime.now()
+        default=datetime.utcnow(),
+        onupdate=datetime.utcnow()
     )
     items = db.relationship('Item')
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -52,8 +52,8 @@ class Item(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.now())
     date_modified = db.Column(
         db.DateTime,
-        default=datetime.now(),
-        onupdate=datetime.now()
+        default=datetime.utcnow(),
+        onupdate=datetime.utcnow()
     )
     done = db.Column(db.Boolean, default=False)
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlist.id'))

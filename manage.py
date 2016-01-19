@@ -3,12 +3,15 @@
 from blst.api import app, db
 from blst.models import User
 from flask.ext.script import Server, Manager
+from flask.ext.migrate import Migrate, MigrateCommand
 from getpass import getpass
 import coloredlogs
 import logging
 import sys
 import unittest
 
+# add flask script to perform db migrations
+migrate = Migrate(app, db)
 
 # declare script manager and server configuration
 manager = Manager(app)
@@ -22,6 +25,8 @@ manager.add_command("runserver", Server(
 # configure logging
 coloredlogs.install(level='DEBUG')
 logger = logging.getLogger(__file__)
+
+manager.add_command('db', MigrateCommand)
 
 
 # custom script command to add users
