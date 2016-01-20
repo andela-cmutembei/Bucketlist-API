@@ -16,10 +16,10 @@ class ResourcesTestCase(unittest.TestCase):
         db.drop_all()
 
     def test_get_request_on_bucketlist_resource(self):
-        """Checks status code and data on response from bucketlists resource"""
+        """Checks status code for unauthenticated user on bucketlists resource"""
 
         response = self.client.get("/bucketlists/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 401)
 
 if __name__ == '__main__':
     unittest.main()

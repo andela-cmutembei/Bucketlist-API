@@ -1,7 +1,8 @@
+from blst.api import db
+from blst.models import Bucketlist, Item, User
+from flask.ext.login import login_required, current_user
 from flask_restful import Resource, fields, marshal
 from flask_restful.reqparse import RequestParser
-from blst.api import db
-from blst.models import Bucketlist, Item
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -24,11 +25,30 @@ bucketlist_fields = {
 }
 
 
+class Login(Resource):
+    """Resource for login"""
+
+    def post(self):
+        parser = RequestParser()
+        parser.add_argument('username', type=str, required=True)
+        parser.add_argument('password', type=str, required=True)
+        args = parser.parse_args()
+
+        user = User.query.filter_by(username=args.username).first()
+        if user and user.verify_password(args.password):
+            token = user.generate_auth_token()
+            return {'token': token}
+        else:
+            return {'message': 'Incorrect credentials'}
+
+
 class AllBucketlists(Resource):
     """Resource for operations on all bucketlists"""
 
+    decorators = [login_required]
+
     def get(self):
-        bucketlists = Bucketlist.query.all()
+        bucketlists = Bucketlist.query.filter_by(created_by=current_user.id).all()
         return marshal(bucketlists, bucketlist_fields)
 
     def post(self):
@@ -37,7 +57,7 @@ class AllBucketlists(Resource):
         args = parser.parse_args()
         try:
             new_bucketlist = Bucketlist(
-                name=args.name, created_by=1
+                name=args.name, created_by=current_user.id
             )
             db.session.add(new_bucketlist)
             db.session.commit()
@@ -51,9 +71,11 @@ class AllBucketlists(Resource):
 class SingleBucketlists(Resource):
     """Resource for operations on a single bucketlists"""
 
+    decorators = [login_required]
+
     def get(self, id):
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             return marshal(bucketlist, bucketlist_fields)
         except NoResultFound:
             return {'message': 'No bucketlist with id {0}'.format(id)}
@@ -64,7 +86,7 @@ class SingleBucketlists(Resource):
         args = parser.parse_args()
 
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             bucketlist.name = args.name
             db.session.commit()
             return marshal(bucketlist, bucketlist_fields)
@@ -84,12 +106,14 @@ class SingleBucketlists(Resource):
 class AllBucketlistItems(Resource):
     """Resource for operations on all items in bucketlists"""
 
+    decorators = [login_required]
+
     def post(self, id):
         parser = RequestParser()
         parser.add_argument('name', type=str, required=True)
         args = parser.parse_args()
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             if bucketlist is not None:
                 item = Item(name=args.name, bucketlist_id=id)
                 db.session.add(item)
@@ -102,9 +126,11 @@ class AllBucketlistItems(Resource):
 class SingleBucketlistItem(Resource):
     """Resource for operations on a single item in bucketlist"""
 
+    decorators = [login_required]
+
     def get(self, id, item_id):
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             if bucketlist is not None:
                 try:
                     item = Item.query.filter_by(id=item_id).one()
@@ -120,7 +146,7 @@ class SingleBucketlistItem(Resource):
         parser.add_argument('done')
         args = parser.parse_args()
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             if bucketlist is not None:
                 try:
                     item = Item.query.filter_by(id=item_id).one()
@@ -137,7 +163,7 @@ class SingleBucketlistItem(Resource):
 
     def delete(self, id, item_id):
         try:
-            bucketlist = Bucketlist.query.filter_by(id=id).one()
+            bucketlist = Bucketlist.query.filter_by(created_by=current_user.id, id=id).one()
             if bucketlist is not None:
                 try:
                     item = Item.query.filter_by(id=item_id).one()
