@@ -9,13 +9,13 @@ class ResourcesTestCase(unittest.TestCase):
         app.config.from_object(config['testing'])
         db.create_all()
 
-        self.client = self.app.test_client()
+        self.client = app.test_client()
 
     def tearDown(self):
         db.session.remove()
         db.drop_all()
 
-    def get_request_on_bucketlist_resource(self):
+    def test_get_request_on_bucketlist_resource(self):
         """Checks status code and data on response from bucketlists resource"""
 
         response = self.client.get("/bucketlists/")
