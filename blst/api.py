@@ -40,15 +40,17 @@ def authenticate_user(request):
         except BadSignature:
             return None
         user = User.query.get(data[0])
-        return user
+        if user.password == data[2] and user.logged_in:
+            return user
     return None
 
 
 
-from resources import AllBucketlists, SingleBucketlists, AllBucketlistItems, SingleBucketlistItem, Login
+from resources import AllBucketlists, SingleBucketlists, AllBucketlistItems, SingleBucketlistItem, Login, Logout
 
 # API resources
 api.add_resource(Login, '/auth/login')
+api.add_resource(Logout, '/auth/logout')
 api.add_resource(AllBucketlists, '/bucketlists/')
 api.add_resource(SingleBucketlists, '/bucketlists/<id>')
 api.add_resource(AllBucketlistItems, '/bucketlists/<id>/items/')

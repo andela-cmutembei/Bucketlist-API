@@ -11,6 +11,7 @@ class User(db.Model, UserMixin):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     _password = db.Column(db.String(128))
+    logged_in = db.Column(db.Boolean, default=False)
 
     # define a hybrid property with fns to be called on instance
     @hybrid_property
@@ -28,6 +29,9 @@ class User(db.Model, UserMixin):
         user_data = [self.user_id, self.username, self.password]
         s = Serializer(app.config['SECRET_KEY'], expires_in=600)
         return s.dumps(user_data)
+
+    def invalidate_token(self):
+        self.logged_in = False
 
     def __repr__(self):
         return '<User {0} : {1}>'.format(self.user_id, self.username)

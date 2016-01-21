@@ -1,4 +1,4 @@
-from blst.api import db
+from blst.api import db, authenticate_user
 from blst.models import Bucketlist, Item, User
 from flask import request
 from flask.ext.login import login_required, current_user
@@ -39,9 +39,29 @@ class Login(Resource):
         user = User.query.filter_by(username=args.username).first()
         if user and user.verify_password(args.password):
             token = user.generate_auth_token()
+            user.logged_in = True
+            try:
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback
+
             return {'token': token}
         else:
             return {'message': 'Incorrect credentials'}
+
+
+class Logout(Resource):
+    """Resource for logout"""
+
+    def get(self):
+        user = authenticate_user(request)
+        user.invalidate_token()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback
+    
+        return {"message": "logged out"}
 
 
 class AllBucketlists(Resource):
