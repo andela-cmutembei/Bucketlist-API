@@ -9,6 +9,8 @@ install: pip install -r requirements.txt
 env:
   global:
     - TRAVIS_BUILD=true
+before_script:
+    - psql -c 'create database bucketlist;' -U postgres
 script:
     - python manage.py upgrade
     - coverage run --source=blst --omit="*virtualenv*","*envs*","migrations/*","blst/__init__.py" manage.py test
