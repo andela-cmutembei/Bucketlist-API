@@ -6,6 +6,7 @@ from flask_restful import Resource, fields, marshal
 from flask_restful.reqparse import RequestParser
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
+from werkzeug.exceptions import BadRequestKeyError
 
 
 item_fields = {
@@ -59,7 +60,6 @@ class AllBucketlists(Resource):
         else:
             limit = 20
 
-        import ipdb; ipdb.set_trace()
         # set page of pagination
         if 'page' in request.args:
             if request.args['page'].isdigit():
@@ -69,10 +69,17 @@ class AllBucketlists(Resource):
         else:
             page = 1
 
-        bucketlists = Bucketlist.query.filter_by(created_by=current_user.user_id).paginate(page, limit).items
+        # accept search parameter
+        try:
+            search = request.args['q']
+        except BadRequestKeyError:
+            search = ''
 
-
-        return marshal(bucketlists, bucketlist_fields)
+        try:
+            bucketlists = Bucketlist.query.filter(Bucketlist.created_by == current_user.user_id, Bucketlist.name.like('%' + search + '%')).paginate(page, limit).items
+            return marshal(bucketlists, bucketlist_fields)
+        except SQLAlchemyError:
+            return {'message': 'Error'}
 
     def post(self):
         parser = RequestParser()
