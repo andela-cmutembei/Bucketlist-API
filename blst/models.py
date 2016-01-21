@@ -16,21 +16,31 @@ class User(db.Model, UserMixin):
     # define a hybrid property with fns to be called on instance
     @hybrid_property
     def password(self):
+        """Assigns the hashed password to user"""
+
         return self._password
 
     @password.setter
     def _set_password(self, plaintext):
+        """Hashes a password from plaintext to ciphertext"""
+
         self._password = bcrypt.generate_password_hash(plaintext)
 
     def verify_password(self, plaintext):
+        """Checks the entered paintext against the hashed password"""
+
         return bcrypt.check_password_hash(self.password, plaintext)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=6000):
+        """Generates a authentication token from user data"""
+
         user_data = [self.user_id, self.username, self.password]
-        s = Serializer(app.config['SECRET_KEY'], expires_in=600)
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps(user_data)
 
     def invalidate_token(self):
+        """Makes an existing token invalid by logging out a user"""
+
         self.logged_in = False
 
     def __repr__(self):

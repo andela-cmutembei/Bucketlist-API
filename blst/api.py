@@ -14,6 +14,10 @@ app = Flask(__name__)
 api = Api(app)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
+
+# To avoid cyclic imports import has to come after db
+from blst.models import User
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -25,12 +29,11 @@ app.config.from_object(config[config_name])
 
 auth_serializer = Serializer(app.config['SECRET_KEY'])
 
-from blst.models import User
-
 
 @login_manager.request_loader
 def authenticate_user(request):
-    """Require token for authentication to allow view"""
+    """Require token for authentication to allow user to access resources"""
+
     token = request.headers.get('Authorization')
     if token:
         try:
@@ -44,9 +47,8 @@ def authenticate_user(request):
             return user
     return None
 
-
-
-from resources import AllBucketlists, SingleBucketlists, AllBucketlistItems, SingleBucketlistItem, Login, Logout
+# * import protected with __all__
+from resources import *
 
 # API resources
 api.add_resource(Login, '/auth/login')

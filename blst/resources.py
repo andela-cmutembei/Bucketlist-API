@@ -8,9 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.exceptions import BadRequestKeyError
 
+__all__ = ['AllBucketlists', 'SingleBucketlists', 'AllBucketlistItems', 'SingleBucketlistItem', 'Login', 'Logout']
 
 item_fields = {
-    'id': fields.Integer,
+    'item_id': fields.Integer,
     'name': fields.String,
     'date_created': fields.DateTime(dt_format='rfc822'),
     'date_modified': fields.DateTime(dt_format='rfc822'),
@@ -18,7 +19,7 @@ item_fields = {
 }
 
 bucketlist_fields = {
-    'id': fields.Integer,
+    'bucketlist_id': fields.Integer,
     'name': fields.String,
     'date_created': fields.DateTime(dt_format='rfc822'),
     'date_modified': fields.DateTime(dt_format='rfc822'),
@@ -28,9 +29,11 @@ bucketlist_fields = {
 
 
 class Login(Resource):
-    """Resource for login"""
+    """Resource for authenticating users and generating a token for them"""
 
     def post(self):
+        """generates a token for authorizing and logging in the user"""
+
         parser = RequestParser()
         parser.add_argument('username', type=str, required=True)
         parser.add_argument('password', type=str, required=True)
@@ -47,20 +50,21 @@ class Login(Resource):
 
             return {'token': token}
         else:
-            return {'message': 'Incorrect credentials'}
+            return {'message': 'Incorrect credentials'}, 401
 
 
 class Logout(Resource):
     """Resource for logout"""
 
     def get(self):
+        """logs out the user making the token invalid"""
         user = authenticate_user(request)
         user.invalidate_token()
         try:
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback
-    
+
         return {"message": "logged out"}
 
 
@@ -70,6 +74,7 @@ class AllBucketlists(Resource):
     decorators = [login_required]
 
     def get(self):
+        """Responds with bucketlists for the user; all, paginated or searched"""
 
         # set limit for pagination
         if 'limit' in request.args:
@@ -96,12 +101,15 @@ class AllBucketlists(Resource):
             search = ''
 
         try:
+            # query the bucketlist table for all or searched bucketlists and paginate the results in specified in query parameters
             bucketlists = Bucketlist.query.filter(Bucketlist.created_by == current_user.user_id, Bucketlist.name.like('%' + search + '%')).paginate(page, limit).items
             return marshal(bucketlists, bucketlist_fields)
         except SQLAlchemyError:
             return {'message': 'Error'}
 
     def post(self):
+        """Creates a bucketlist under the currently authenticated user"""
+
         parser = RequestParser()
         parser.add_argument('name', type=str, required=True)
         args = parser.parse_args()
@@ -124,6 +132,8 @@ class SingleBucketlists(Resource):
     decorators = [login_required]
 
     def get(self, id):
+        """Returns a specified bucketlist - by id - for authenticated user"""
+
         try:
             bucketlist = Bucketlist.query.filter_by(created_by=current_user.user_id, bucketlist_id=id).one()
             return marshal(bucketlist, bucketlist_fields)
@@ -131,6 +141,8 @@ class SingleBucketlists(Resource):
             return {'message': 'No bucketlist with id {0}'.format(id)}
 
     def put(self, id):
+        """Updates the name of a specific bucketlist, for authenticated user"""
+
         parser = RequestParser()
         parser.add_argument('name', type=str, required=True)
         args = parser.parse_args()
@@ -144,6 +156,8 @@ class SingleBucketlists(Resource):
             return {'message': 'No bucketlist with id {0}'.format(id)}
 
     def delete(self, id):
+        """Deletes a specific bucketlist - by id - for authenticated user"""
+
         try:
             bucketlist = Bucketlist.query.filter_by(bucketlist_id=id).one()
             db.session.delete(bucketlist)
@@ -159,6 +173,8 @@ class AllBucketlistItems(Resource):
     decorators = [login_required]
 
     def post(self, id):
+        """Creates a new item in a specified bucketlist, belonging to authenticated user"""
+
         parser = RequestParser()
         parser.add_argument('name', type=str, required=True)
         args = parser.parse_args()
@@ -179,6 +195,8 @@ class SingleBucketlistItem(Resource):
     decorators = [login_required]
 
     def get(self, id, item_id):
+        """Returns a specific item contained in a bucketlist owned by authenticated user"""
+
         try:
             bucketlist = Bucketlist.query.filter_by(created_by=current_user.user_id, bucketlist_id=id).one()
             if bucketlist is not None:
@@ -191,6 +209,8 @@ class SingleBucketlistItem(Resource):
             return {'message': 'No bucketlist with id {0}'.format(id)}
 
     def put(self, id, item_id):
+        """Updates the name and status of a specific item in a bucketlist owned by authenticated user"""
+
         parser = RequestParser()
         parser.add_argument('name', type=str)
         parser.add_argument('done')
@@ -212,6 +232,8 @@ class SingleBucketlistItem(Resource):
             return {'message': 'No bucketlist with id {0}'.format(id)}
 
     def delete(self, id, item_id):
+        """Deletes a specific item in a bucketlist owned by authenticated user"""
+
         try:
             bucketlist = Bucketlist.query.filter_by(created_by=current_user.user_id, bucketlist_id=id).one()
             if bucketlist is not None:
