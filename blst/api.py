@@ -25,7 +25,7 @@ app.config.from_object(config[config_name])
 
 auth_serializer = Serializer(app.config['SECRET_KEY'])
 
-from blst.models import *
+from blst.models import User
 
 
 @login_manager.request_loader

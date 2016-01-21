@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 class User(db.Model, UserMixin):
     """ Defines the user model """
 
-    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     _password = db.Column(db.String(128))
 
@@ -25,18 +25,18 @@ class User(db.Model, UserMixin):
         return bcrypt.check_password_hash(self.password, plaintext)
 
     def generate_auth_token(self, expiration=600):
-        user_data = [self.id, self.username, self.password]
+        user_data = [self.user_id, self.username, self.password]
         s = Serializer(app.config['SECRET_KEY'], expires_in=600)
         return s.dumps(user_data)
 
     def __repr__(self):
-        return '<User {0} : {1}>'.format(self.id, self.username)
+        return '<User {0} : {1}>'.format(self.user_id, self.username)
 
 
 class Bucketlist(db.Model):
     """ Defines the bucketlists model """
 
-    id = db.Column(db.Integer, primary_key=True)
+    bucketlist_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow())
     date_modified = db.Column(
@@ -45,16 +45,16 @@ class Bucketlist(db.Model):
         onupdate=datetime.utcnow()
     )
     items = db.relationship('Item', cascade="all, delete-orphan")
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'))
 
     def __repr__(self):
-        return '<Bucketlist {0} : {1}>'.format(self.id, self.name)
+        return '<Bucketlist {0} : {1}>'.format(self.bucketlist_id, self.name)
 
 
 class Item(db.Model):
     """ Defines the bucketlist items model """
 
-    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow())
     date_modified = db.Column(
@@ -63,7 +63,7 @@ class Item(db.Model):
         onupdate=datetime.utcnow()
     )
     done = db.Column(db.Boolean, default=False)
-    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlist.id'))
+    parent_bucketlist = db.Column(db.Integer, db.ForeignKey('bucketlist.bucketlist_id'))
 
     def __repr__(self):
-        return '<Item {0} : {1}>'.format(self.id, self.name)
+        return '<Item {0} : {1}>'.format(self.item_id, self.name)
