@@ -153,5 +153,41 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertEqual(delete_item.status_code, 200)
         self.assertEqual(item_deletion["message"], "Deleted")
 
+        # test for updating of bucketlist
+        self.bucketlist_id = bucketlist["bucketlist_id"]
+        bucketlist_update = self.client.put(
+            "/bucketlists/" + str(self.bucketlist_id) + "",
+            data=dict(name='bucketlist_test'),
+            headers={'Authorization': self.user_token}
+        )
+
+        updated_bucketlist = json.loads(bucketlist_update.data)
+
+        self.assertEqual(bucketlist_update.status_code, 200)
+        self.assertEqual(updated_bucketlist["name"], 'bucketlist_test')
+
+        # test update of item in bucketlist
+        item = self.client.post(
+            "/bucketlists/" + str(self.bucketlist_id) + "/items/",
+            data=dict(name="test_item"),
+            headers={'Authorization': self.user_token}
+        )
+
+        one_item = json.loads(item.data)
+
+        item_update = self.client.put(
+            "/bucketlists/" + str(self.bucketlist_id) + "/items/"+ str(one_item["item_id"]) + "",
+            data=dict(name="item_test"),
+            headers={'Authorization': self.user_token}
+        )
+
+        updated_item = json.loads(item_update.data)
+        # import ipdb; ipdb.set_trace()
+
+
+        self.assertEqual(item_update.status_code, 200)
+        self.assertEqual(updated_item["name"], 'item_test')
+
+
 if __name__ == '__main__':
     unittest.main()
