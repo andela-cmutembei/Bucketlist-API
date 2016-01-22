@@ -8,6 +8,7 @@ import json
 class ResourcesTestCase(unittest.TestCase):
 
     def setUp(self):
+        """method to initialize values used in testing"""
         app.config.from_object(config['testing'])
         db.create_all()
 
@@ -27,6 +28,7 @@ class ResourcesTestCase(unittest.TestCase):
         self.user_token = data['token']
 
     def tearDown(self):
+        """method to clearing values used in testing from DB"""
         db.session.remove()
         db.drop_all()
 
@@ -37,6 +39,7 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_getting_authentication_token_for_valid_user(self):
+        """test for getting an authentication toke with valid user data"""
 
         response = self.client.post(
             "/auth/login",
@@ -48,6 +51,7 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertGreater(length, 100)
 
     def test_failing_auth_token_for_invalid_user(self):
+        """Test for failing to get auth token for invalid user credentials"""
 
         response = self.client.post(
             "/auth/login",
@@ -56,6 +60,7 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_list_all_bucektlists_for_authenticated_user(self):
+        """Test for getting all bucketlists for authenticated users"""
 
         response = self.client.get(
             "/bucketlists/",
@@ -66,6 +71,7 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertEqual(response.data, '[]\n')
 
     def test_creating_and_getting_a_bucketlist_for_authenticated_user(self):
+        """Test for creating and getting bucketlist and constituent items"""
 
         # test all bucketlists
         response = self.client.post(
@@ -102,7 +108,6 @@ class ResourcesTestCase(unittest.TestCase):
         self.assertEqual(item.status_code, 200)
         self.assertEqual(one_item["name"], 'test_item')
 
-
         # test single item in bucketlist
         self.item_id = one_item["item_id"]
         single_item = self.client.get(
@@ -113,6 +118,40 @@ class ResourcesTestCase(unittest.TestCase):
         created_item = json.loads(single_item.data)
 
         self.assertEqual(single_item.status_code, 200)
-        self.assertEqual(one_item["name"], 'test_item')
+        self.assertEqual(created_item["name"], 'test_item')
+
+        # test for deletion of bucketlist
+        second_bucketlist = self.client.post(
+            "/bucketlists/",
+            data=dict(name='second_bucketlist'),
+            headers={'Authorization': self.user_token}
+        )
+
+        bucketlist_two = json.loads(second_bucketlist.data)
+
+        self.assertEqual(second_bucketlist.status_code, 200)
+        self.assertEqual(bucketlist_two["name"], 'second_bucketlist')
+
+        delete_response = self.client.delete(
+            "/bucketlists/" + str(bucketlist_two["bucketlist_id"]) + "",
+            headers={'Authorization': self.user_token}
+        )
+
+        deletion = json.loads(delete_response.data)
+
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertEqual(deletion["message"], "Deleted")
+
+        # test for deletion of an item in bucketlist
+        delete_item = self.client.delete(
+            "/bucketlists/" + str(bucketlist["bucketlist_id"]) + "/items/" + str(one_item["item_id"]) + "",
+            headers={'Authorization': self.user_token}
+        )
+
+        item_deletion = json.loads(delete_item.data)
+
+        self.assertEqual(delete_item.status_code, 200)
+        self.assertEqual(item_deletion["message"], "Deleted")
+
 if __name__ == '__main__':
     unittest.main()

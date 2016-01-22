@@ -44,6 +44,7 @@ class User(db.Model, UserMixin):
         self.logged_in = False
 
     def __repr__(self):
+        """Represents the user object"""
         return '<User {0} : {1}>'.format(self.user_id, self.username)
 
 
@@ -62,6 +63,7 @@ class Bucketlist(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'))
 
     def __repr__(self):
+        """Represents the bucketlist object"""
         return '<Bucketlist {0} : {1}>'.format(self.bucketlist_id, self.name)
 
 
@@ -80,4 +82,5 @@ class Item(db.Model):
     parent_bucketlist = db.Column(db.Integer, db.ForeignKey('bucketlist.bucketlist_id'))
 
     def __repr__(self):
+        """Represents the item object"""
         return '<Item {0} : {1}>'.format(self.item_id, self.name)

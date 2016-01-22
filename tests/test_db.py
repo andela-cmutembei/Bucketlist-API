@@ -7,10 +7,13 @@ import unittest
 class DBTestCase(unittest.TestCase):
 
     def setUp(self):
+        """method to initialize values used in testing"""
+
         app.config.from_object(config['testing'])
         db.create_all()
 
     def tearDown(self):
+        """method to clearing values used in testing from DB"""
         db.session.remove()
         db.drop_all()
 

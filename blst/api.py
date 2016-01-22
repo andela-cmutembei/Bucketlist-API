@@ -47,8 +47,7 @@ def authenticate_user(request):
             return user
     return None
 
-# * import protected with __all__
-from resources import *
+from resources import AllBucketlists, SingleBucketlists, AllBucketlistItems, SingleBucketlistItem, Login, Logout
 
 # API resources
 api.add_resource(Login, '/auth/login')
