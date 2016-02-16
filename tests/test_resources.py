@@ -182,8 +182,6 @@ class ResourcesTestCase(unittest.TestCase):
         )
 
         updated_item = json.loads(item_update.data)
-        # import ipdb; ipdb.set_trace()
-
 
         self.assertEqual(item_update.status_code, 200)
         self.assertEqual(updated_item["name"], 'item_test')

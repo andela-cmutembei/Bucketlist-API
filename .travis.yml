@@ -12,7 +12,7 @@ env:
 before_script:
     - psql -c 'create database bucketlist;' -U postgres
 script:
-    - coverage run --source=blst --omit="*virtualenv*","*envs*","migrations/*","blst/__init__.py" manage.py test
+    - nosetests --with-coverage --cover-package=.
 branches:
   only:
       - master

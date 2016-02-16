@@ -8,7 +8,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.exceptions import BadRequestKeyError
 
-__all__ = ['', '', '', '', '', '']
 
 item_fields = {
     'item_id': fields.Integer,
@@ -43,11 +42,7 @@ class Login(Resource):
         if user and user.verify_password(args.password):
             token = user.generate_auth_token()
             user.logged_in = True
-            try:
-                db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback
-
+            db.session.commit()
             return {'token': token}
         else:
             return {'message': 'Incorrect credentials'}, 401
@@ -60,10 +55,7 @@ class Logout(Resource):
         """logs out the user making the token invalid"""
         user = authenticate_user(request)
         user.invalidate_token()
-        try:
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback
+        db.session.commit()
 
         return {"message": "logged out"}
 
