@@ -1,0 +1,2 @@
+# Exclude migrations folder on QuantifiedCode
+migrations/**
