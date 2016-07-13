@@ -3,6 +3,7 @@ from flask.ext.bcrypt import Bcrypt
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
+from raven.contrib.flask import Sentry
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 
@@ -15,6 +16,7 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 
+
 # To avoid cyclic imports import has to come after db
 from blst.models import User
 
@@ -26,6 +28,9 @@ login_manager.init_app(app)
 config_name = os.environ.get('BLST_CONFIG', 'default')
 app.config.from_object(config[config_name])
 
+
+# sentry config
+sentry = Sentry(app)
 
 auth_serializer = Serializer(app.config['SECRET_KEY'])
 
