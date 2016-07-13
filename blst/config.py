@@ -1,6 +1,7 @@
 import os
+from flask.ext.dotenv import DotEnv
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Config(object):
@@ -8,9 +9,14 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SECRET_KEY = os.environ.get('SECRET')
+
+    @classmethod
+    def init_app(self, app):
+        env = DotEnv()
+        env.init_app(app, os.path.join(BASE_DIR, '.env'), verbose_mode=True)
 
 
 # configuration for when in production
@@ -31,9 +37,9 @@ class TestingConfig(Config):
     """configuration for when testing"""
     TESTING = True
     if os.getenv('TRAVIS_BUILD', None):
-        SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     else:
-        SQLALCHEMY_DATABASE_URI = os.environ['TEST_DB_URL']
+        SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DB_URL')
 
 
 config = {
