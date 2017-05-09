@@ -26,9 +26,9 @@ The following endpoints are accessible
 | PUT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`/bucketlists/<id>/items/<item_id>` |  Update item in bucket list with matching `<id>` |
 | DELETE `/bucketlists/<id>/items/<item_id>` |  Delete item in bucket list with matching `<id>` |
 #### Installation
-To run blst locally configure [environment variables](https://github.com/andela-cmutembei/Bucketlist-API/wiki) and do the following:
+To run blst locally configure [environment variables](https://github.com/collinmutembei/Bucketlist-API/wiki) and do the following:
 ```shell
-$ git clone https://github.com/andela-cmutembei/Bucketlist-API.git && cd $_
+$ git clone https://github.com/collinmutembei/Bucketlist-API.git && cd $_
 
 $ workon bucketlist-env
 
