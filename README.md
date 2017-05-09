@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/andela-cmutembei/II.svg)](https://travis-ci.org/andela-cmutembei/II)
+[![Build Status](https://travis-ci.org/collinmutembei/II.svg)](https://travis-ci.org/collinmutembei/II)
 [![Coverage Status](https://coveralls.io/repos/andela-cmutembei/II/badge.svg?branch=master)](https://coveralls.io/github/andela-cmutembei/II?branch=master)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/ca76a139cf6b45be9eebc1f09296a622/snapshot/origin:master:HEAD/badge.svg)](https://www.quantifiedcode.com/app/project/ca76a139cf6b45be9eebc1f09296a622)
 
